@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EverChain Bridge Helper</title>
+
+<!-- ── favicon ── -->
+<link rel="icon" type="image/png" sizes="512x512" href="arbiicon512.png">
+<link rel="apple-touch-icon" href="arbiicon512.png">
+
+<!-- ── Open Graph (카카오톡 / 페이스북 / 인스타 등 링크 미리보기) ── -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="EverChain Bridge Helper">
+<meta property="og:title" content="EverChain Bridge Helper">
+<meta property="og:description" content="EverChain의 EVM L1↔L2 입출금 Helper 페이지 입니다.">
+<meta property="og:image" content="etherarbiswap.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+
+<!-- ── Twitter Card ── -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="EverChain Bridge Helper">
+<meta name="twitter:description" content="EverChain의 EVM L1↔L2 입출금 Helper 페이지 입니다.">
+<meta name="twitter:image" content="etherarbiswap.png">
+
+<meta name="description" content="EverChain의 EVM L1↔L2 입출금 Helper 페이지 입니다.">
+
+<style>
+  /* ─── Theme variables ─── */
+  :root {
+    /* Dark (default) */
+    --bg: #0f1115;
+    --fg: #d8e0ec;
+    --muted: #9ca3af;
+    --muted-2: #6b7280;
+    --card: #1a1d24;
+    --card-2: #14171d;
+    --border: #2a2f3a;
+    --border-2: #2d3748;
+    --input-bg: #0f1115;
+    --input-border: #2d3748;
+    --code-bg: #0f1115;
+    --code-border: #1f242d;
+    --pill-bg: #1a1d24;
+    --hover-bg: #232732;
+    --copy-bg: #2d3748;
+    --copy-hover: #4a5568;
+    --accent: #3b82f6;
+    --accent-hover: #2563eb;
+    --primary: #10b981;
+    --primary-hover: #059669;
+    --info-bg: #172554; --info-fg: #93c5fd; --info-border: #1e3a8a;
+    --success-bg: #052e1a; --success-fg: #6ee7b7; --success-border: #065f46;
+    --warn-bg: #422006; --warn-fg: #fcd34d; --warn-border: #78350f;
+    --error-bg: #450a0a; --error-fg: #fca5a5; --error-border: #7f1d1d;
+    --tx-bg: #052e1a; --tx-border: #065f46; --tx-fg: #d1fae5;
+    --chain-l1: #fcd34d; --chain-l1-border: #78350f;
+    --chain-l2: #6ee7b7; --chain-l2-border: #065f46;
+    --chain-wrong: #fca5a5; --chain-wrong-border: #7f1d1d;
+    --link: #60a5fa;
+    --emphasize: #f87171;
+  }
+  [data-theme="light"] {
+    --bg: #ffffff;
+    --fg: #111827;
+    --muted: #6b7280;
+    --muted-2: #9ca3af;
+    --card: #f9fafb;
+    --card-2: #f3f4f6;
+    --border: #e5e7eb;
+    --border-2: #d1d5db;
+    --input-bg: #ffffff;
+    --input-border: #d1d5db;
+    --code-bg: #f3f4f6;
+    --code-border: #e5e7eb;
+    --pill-bg: #f3f4f6;
+    --hover-bg: #e5e7eb;
+    --copy-bg: #e5e7eb;
+    --copy-hover: #d1d5db;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --primary: #059669;
+    --primary-hover: #047857;
+    --info-bg: #dbeafe; --info-fg: #1e40af; --info-border: #93c5fd;
+    --success-bg: #d1fae5; --success-fg: #047857; --success-border: #6ee7b7;
+    --warn-bg: #fef3c7; --warn-fg: #92400e; --warn-border: #fcd34d;
+    --error-bg: #fee2e2; --error-fg: #991b1b; --error-border: #fca5a5;
+    --tx-bg: #d1fae5; --tx-border: #6ee7b7; --tx-fg: #064e3b;
+    --chain-l1: #d97706; --chain-l1-border: #fcd34d;
+    --chain-l2: #059669; --chain-l2-border: #6ee7b7;
+    --chain-wrong: #dc2626; --chain-wrong-border: #fca5a5;
+    --link: #2563eb;
+    --emphasize: #dc2626;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.55;
+    padding: 0 16px 80px;
+    min-height: 100vh;
+    transition: background 0.2s, color 0.2s;
+  }
+  .container { max-width: 920px; margin: 0 auto; }
+
+  /* ── Header ─────────────────────────────────── */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 0 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+    flex-wrap: wrap; gap: 12px;
+  }
+  header h1 { font-size: 22px; margin: 0; letter-spacing: -0.01em; }
+  header .wallet-info { display: flex; align-items: center; gap: 8px; font-size: 13px; flex-wrap: wrap; }
+  header .pill {
+    background: var(--pill-bg); border: 1px solid var(--border-2);
+    padding: 5px 10px; border-radius: 999px;
+    font-family: ui-monospace, Menlo, monospace; font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* 체인 표시 — 양쪽 다 보여주고 현재 활성만 강조 */
+  .chain-group {
+    display: inline-flex; align-items: center; gap: 0;
+    border: 1px solid var(--border-2); border-radius: 999px;
+    overflow: hidden;
+    background: var(--pill-bg);
+  }
+  .chain-pill {
+    padding: 5px 11px; font-size: 12px;
+    font-family: ui-monospace, Menlo, monospace;
+    color: var(--muted);
+    cursor: pointer; border: 0; background: transparent;
+    transition: background 0.12s, color 0.12s;
+  }
+  .chain-pill:hover { background: var(--hover-bg); color: var(--fg); }
+  .chain-pill.active { background: var(--accent); color: #fff; cursor: default; }
+  .chain-pill.active.l1 { background: var(--chain-l1); color: #1f1404; }
+  .chain-pill.active.l2 { background: var(--chain-l2); color: #04261a; }
+  .chain-sep { color: var(--muted-2); font-size: 11px; align-self: center; }
+
+  /* 테마 토글 / 로그아웃 작은 아이콘 버튼 */
+  .icon-btn {
+    background: transparent; border: 1px solid var(--border-2);
+    color: var(--muted); padding: 6px 10px; border-radius: 6px;
+    cursor: pointer; font-size: 13px;
+    transition: background 0.12s, color 0.12s;
+  }
+  .icon-btn:hover { background: var(--hover-bg); color: var(--fg); }
+
+  /* 잔액 표시 (지갑 연결 시 등장) */
+  .balances {
+    display: flex; gap: 18px;
+    background: var(--card-2);
+    border: 1px solid var(--border);
+    padding: 10px 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .balances .bal-label { color: var(--muted-2); font-size: 12px; }
+  .balances .bal-value {
+    color: var(--fg); font-family: ui-monospace, Menlo, monospace;
+    font-weight: 600;
+  }
+  .balances .bal-l1 .bal-value { color: var(--chain-l1); }
+  .balances .bal-l2 .bal-value { color: var(--chain-l2); }
+  .balances .bal-item { display: flex; align-items: center; gap: 6px; }
+  .balances .bal-refresh {
+    margin-left: auto;
+    background: transparent; border: 1px solid var(--border-2);
+    color: var(--muted); padding: 4px 10px; border-radius: 4px;
+    font-size: 11.5px; cursor: pointer;
+  }
+  .balances .bal-refresh:hover { background: var(--card); color: var(--fg); }
+  .balances.refreshing .bal-refresh::after { content: " ⟳"; animation: spin 0.6s linear infinite; }
+  @keyframes spin { from{transform:rotate(0)} to{transform:rotate(360deg)} }
+
+  /* ── 상단 패널 (잔액 + Contract 버튼) ── */
+  .top-panel {
+    display: flex; gap: 12px; flex-wrap: wrap;
+    margin-bottom: 20px;
+    align-items: stretch;
+  }
+  .top-panel .balances { flex: 1 1 260px; margin-bottom: 0; }
+  .contracts-link {
+    flex: 0 0 auto;
+    display: inline-flex; align-items: center; gap: 10px;
+    background: var(--card-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0 18px;
+    color: var(--fg);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 12.5px;
+    transition: background 0.12s, transform 0.12s, border-color 0.12s;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .contracts-link:hover {
+    background: var(--card);
+    border-color: var(--accent);
+    transform: translateX(2px);
+    text-decoration: none;
+  }
+  .contracts-link .cl-arrow { color: var(--accent); font-size: 16px; }
+
+  /* ── Tabs ────────────────────────────────────── */
+  nav.tabs {
+    display: flex; gap: 4px;
+    background: var(--card);
+    padding: 4px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+  }
+  nav.tabs button {
+    flex: 1;
+    background: transparent;
+    color: var(--muted);
+    border: 0;
+    padding: 12px 8px;
+    border-radius: 7px;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.12s, color 0.12s;
+  }
+  nav.tabs button:hover { color: var(--fg); background: var(--hover-bg); }
+  nav.tabs button.active { background: var(--accent); color: #fff; }
+
+  /* ── Cards / form ────────────────────────────── */
+  .tab-content { display: none; }
+  .tab-content.active { display: block; animation: fade .15s ease-out; }
+  @keyframes fade { from {opacity:0;transform:translateY(2px)} to {opacity:1;transform:none} }
+
+  .tab-intro { color: var(--muted); font-size: 14px; margin: 0 0 16px; }
+  .tab-intro code { background: var(--card); padding: 1px 6px; border-radius: 3px; font-size: 12.5px; }
+
+  .card {
+    background: var(--card);
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+  }
+  .card h3 { margin: 0 0 14px; font-size: 15px; }
+  label {
+    display: block; font-size: 12px;
+    color: var(--muted); margin-bottom: 6px;
+    text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600;
+  }
+  label .opt { color: var(--muted-2); text-transform: none; font-weight: 400; letter-spacing: 0; font-size: 11.5px; }
+  input[type=text] {
+    width: 100%; padding: 11px 14px;
+    background: var(--input-bg); color: var(--fg);
+    border: 1px solid var(--input-border);
+    border-radius: 6px;
+    font-family: ui-monospace, Menlo, monospace; font-size: 13.5px;
+    margin-bottom: 14px;
+  }
+  input[type=text]:focus { outline: 2px solid var(--accent); border-color: var(--accent); }
+  .form-hint { font-size: 12px; color: var(--muted-2); margin: -8px 0 12px; }
+  button.action {
+    background: var(--accent); color: #fff; border: 0;
+    padding: 11px 22px; border-radius: 6px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: background 0.12s;
+  }
+  button.action:hover { background: var(--accent-hover); }
+  button.action:disabled { background: var(--muted-2); cursor: not-allowed; }
+  button.action.primary { background: var(--primary); }
+  button.action.primary:hover { background: var(--primary-hover); }
+  button.action.secondary { background: var(--copy-bg); color: var(--fg); }
+  button.action.secondary:hover { background: var(--copy-hover); }
+
+  /* ── Status / output ─────────────────────────── */
+  .status {
+    padding: 10px 14px; border-radius: 6px;
+    margin-top: 12px; font-size: 13.5px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .status.info    { background: var(--info-bg);    color: var(--info-fg);    border: 1px solid var(--info-border); }
+  .status.success { background: var(--success-bg); color: var(--success-fg); border: 1px solid var(--success-border); }
+  .status.warn    { background: var(--warn-bg);    color: var(--warn-fg);    border: 1px solid var(--warn-border); }
+  .status.error   { background: var(--error-bg);   color: var(--error-fg);   border: 1px solid var(--error-border); }
+  .hidden { display: none !important; }
+
+  /* tx 결과 박스 */
+  .tx-result {
+    background: var(--tx-bg);
+    border: 1px solid var(--tx-border);
+    padding: 14px; border-radius: 8px;
+    margin-top: 14px;
+    font-size: 13.5px; color: var(--tx-fg);
+  }
+  .tx-result strong { color: var(--success-fg); }
+  .tx-result code {
+    display: inline-block;
+    background: var(--code-bg); padding: 2px 6px;
+    border-radius: 3px; font-size: 12px;
+    word-break: break-all;
+    border: 1px solid var(--code-border);
+  }
+  .tx-result a { color: var(--success-fg); text-decoration: underline; }
+  .tx-actions { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
+
+  /* ── 8개 인자 표시 ───────────────────────────── */
+  .arg-row { padding: 11px 0; border-top: 1px solid var(--border); }
+  .arg-row:first-child { border-top: 0; padding-top: 0; }
+  .arg-name {
+    font-size: 12px; color: var(--muted); margin-bottom: 5px;
+    font-weight: 600;
+    display: flex; align-items: baseline; gap: 8px;
+  }
+  .arg-name code { color: var(--link); font-size: 12px; }
+  .hint-inline { color: var(--muted-2); font-weight: 400; font-size: 11.5px; }
+  .arg-value-wrap { display: flex; gap: 8px; align-items: flex-start; }
+  .arg-value {
+    flex: 1;
+    background: var(--code-bg);
+    padding: 9px 12px;
+    border-radius: 4px;
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 12.5px; word-break: break-all;
+    border: 1px solid var(--code-border);
+    color: var(--fg);
+  }
+  .copy-btn {
+    background: var(--copy-bg); color: var(--fg); border: 0;
+    padding: 7px 11px; border-radius: 4px;
+    font-size: 11.5px; font-weight: 500; cursor: pointer;
+    white-space: nowrap;
+  }
+  .copy-btn:hover { background: var(--copy-hover); }
+  .copy-btn.copied { background: var(--success-border); color: var(--success-fg); }
+
+  /* ── 외부 링크들 ─────────────────────────────── */
+  .links {
+    background: var(--card-2);
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .links span { color: var(--muted-2); margin-right: 8px; }
+  .links a { color: var(--link); margin-right: 14px; }
+  .links a:hover { text-decoration: underline; }
+
+  a { color: var(--link); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  footer { text-align: center; color: var(--muted-2); font-size: 12px; margin-top: 36px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>🔄 EverChain Bridge Helper</h1>
+    <div class="wallet-info">
+      <span id="account" class="pill hidden"></span>
+      <button id="copy-addr" class="icon-btn hidden" title="주소 복사">📋</button>
+      <div id="chain-group" class="chain-group hidden">
+        <button class="chain-pill" id="pill-l1" data-chain="L1">EtherEver L1</button>
+        <span class="chain-sep">/</span>
+        <button class="chain-pill" id="pill-l2" data-chain="L2">ArbiEver L2</button>
+      </div>
+      <button id="connect"    class="action secondary">지갑 연결</button>
+      <button id="disconnect" class="icon-btn hidden" title="지갑 연결 해제">로그아웃</button>
+      <button id="theme"      class="icon-btn" title="테마 전환">🌙</button>
+    </div>
+  </header>
+
+  <!-- 상단 패널: 좌(잔액) + 우(ArbiEver 컨트랙트 표) -->
+  <div class="top-panel">
+    <!-- 좌: 잔액 (지갑 연결 시 등장) -->
+    <div id="balances" class="balances hidden">
+      <div class="bal-item bal-l1">
+        <span class="bal-label">EtherEver L1</span>
+        <span class="bal-value" id="bal-l1">—</span>
+        <span class="bal-label">ETE</span>
+      </div>
+      <div class="bal-item bal-l2">
+        <span class="bal-label">ArbiEver L2</span>
+        <span class="bal-value" id="bal-l2">—</span>
+        <span class="bal-label">ETE</span>
+      </div>
+      <button class="bal-refresh" id="bal-refresh" title="잔액 새로고침">새로고침</button>
+    </div>
+
+    <!-- 우: 검증된 ArbiEver 컨트랙트 페이지로 이동 -->
+    <a href="contracts.html" class="contracts-link" title="검증된 ArbiEver 컨트랙트 목록">
+      <span>ArbiEver Contract</span>
+      <span class="cl-arrow">→</span>
+    </a>
+  </div>
+
+  <nav class="tabs">
+    <button data-tab="deposit"  class="active">⬇️ L1 → L2 입금</button>
+    <button data-tab="withdraw">⬆️ L2 → L1 출금</button>
+    <button data-tab="execute">✅ L1 인출 실행</button>
+  </nav>
+
+  <!-- ─────────────────────── TAB 1: Deposit ─────────────────────── -->
+  <section id="tab-deposit" class="tab-content active">
+    <p class="tab-intro">
+      EtherEver L1 의 ETE 를 ArbiEver L2 로 보냅니다. <code>DepositHelper.depositEthTo</code> 호출 →
+      Inbox 가 retryable ticket 생성 → 시퀀서가 약 1분 안에 L2 잔액 반영.
+    </p>
+    <div class="card">
+      <h3>입금</h3>
+      <label>받을 L2 주소 <span class="opt">(비우면 본인의 같은 주소로)</span></label>
+      <input id="dep-to" type="text" placeholder="0x... (선택)" autocomplete="off" spellcheck="false">
+      <label>금액 (ETE)</label>
+      <input id="dep-amount" type="text" placeholder="0.1" autocomplete="off" spellcheck="false">
+      <div class="form-hint">최소 0.00102 ETE (수수료 0.00101 ETE 자동 차감)</div>
+      <button id="dep-send" class="action primary">지갑으로 입금</button>
+      <div id="dep-status" class="status hidden"></div>
+      <div id="dep-result" class="tx-result hidden"></div>
+    </div>
+    <div class="links">
+      <span>관련 컨트랙트:</span>
+      <a href="https://etherever.ever-chain.xyz/address/0x1d69eA04188Bf5e34AaDdc277a8cDE70076a0eC2" target="_blank">DepositHelper</a>
+      <a href="https://etherever.ever-chain.xyz/address/0x76b3772769cDD09Fb6A33e5f65fd13256808fc08?tab=write_proxy" target="_blank">Inbox(직접 호출)</a>
+    </div>
+  </section>
+
+  <!-- ─────────────────────── TAB 2: Withdraw ─────────────────────── -->
+  <section id="tab-withdraw" class="tab-content">
+    <div class="pending-withdrawals-host hidden"></div>
+    <p class="tab-intro">
+      ArbiEver L2 의 ETE 를 L1 으로 보내기 시작합니다. <code>WithdrawHelper.withdrawEth</code> 호출 →
+      ArbSys 가 출금 메시지 큐잉 → <strong>약 15분</strong> 후 L1 인출 가능 상태가 되면 "인출 실행" 탭으로.
+    </p>
+    <div class="card">
+      <h3>출금 시작</h3>
+      <label>받을 L1 주소 <span class="opt">(비우면 본인의 같은 주소로)</span></label>
+      <input id="wdr-to" type="text" placeholder="0x... (선택)" autocomplete="off" spellcheck="false">
+      <label>금액 (ETE)</label>
+      <input id="wdr-amount" type="text" placeholder="0.1" autocomplete="off" spellcheck="false">
+      <button id="wdr-send" class="action primary">지갑으로 출금 시작</button>
+      <div id="wdr-status" class="status hidden"></div>
+      <div id="wdr-result" class="tx-result hidden"></div>
+    </div>
+    <div class="links">
+      <span>관련 컨트랙트:</span>
+      <a href="https://arbiever.ever-chain.xyz/address/0x9c17CAc31EB788b36Aac600cB623854359c67c33" target="_blank">WithdrawHelper</a>
+      <a href="https://arbiever.ever-chain.xyz/address/0x0000000000000000000000000000000000000064" target="_blank">ArbSys(precompile)</a>
+    </div>
+  </section>
+
+  <!-- ─────────────────────── TAB 3: Execute ─────────────────────── -->
+  <section id="tab-execute" class="tab-content">
+    <div class="pending-withdrawals-host hidden"></div>
+    <p class="tab-intro">
+      L2 출금 시작 후 ~15분이 지나면 머클 증명과 함께 L1 Outbox 에서 실제 인출이 가능해집니다.
+      L2 트랜잭션 해시를 입력하거나, 위 "출금" 탭의 결과에서 자동으로 가져올 수 있습니다.
+    </p>
+    <div class="card">
+      <h3>L2 트랜잭션 해시</h3>
+      <input id="exe-hash" type="text"
+             placeholder="0x... (L2 의 withdrawEth 트랜잭션 해시)"
+             autocomplete="off" spellcheck="false">
+      <button id="exe-lookup" class="action">조회</button>
+      <div id="exe-status" class="status hidden"></div>
+    </div>
+    <div id="exe-output" class="card hidden">
+      <h3>executeTransaction 인자</h3>
+      <div id="exe-args"></div>
+      <hr style="border:0;border-top:1px solid #2a2f3a;margin:20px 0">
+      <button id="exe-send" class="action primary">지갑으로 1-클릭 인출</button>
+      <div id="exe-result" class="status hidden"></div>
+    </div>
+    <div class="links">
+      <span>관련 컨트랙트:</span>
+      <a href="https://etherever.ever-chain.xyz/address/0xDBA33e4eFbEf4467eD0228C2b43b606B5F2964Ae?tab=write_proxy" target="_blank">Outbox (L1)</a>
+    </div>
+  </section>
+
+  <footer>EtherEver · ArbiEver Bridge Helper</footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+<script>
+(() => {
+  // ─── 상수 ───────────────────────────────────────────────
+  const L2_RPC = "https://rpc-arbi.ever-chain.xyz";
+  const L1_RPC = "https://rpc-ether.ever-chain.xyz";
+  const L1_CHAIN_ID = 58051;    // EtherEver
+  const L2_CHAIN_ID = 580511;   // ArbiEver
+
+  const DEPOSIT_HELPER  = "0x1d69eA04188Bf5e34AaDdc277a8cDE70076a0eC2";
+  const WITHDRAW_HELPER = "0x9c17CAc31EB788b36Aac600cB623854359c67c33";
+  const OUTBOX          = "0xDBA33e4eFbEf4467eD0228C2b43b606B5F2964Ae";
+  const ARBSYS          = "0x0000000000000000000000000000000000000064";
+  const NODEIF          = "0x00000000000000000000000000000000000000C8";
+  const L2_TO_L1_TX_TOPIC =
+    "0x3e7aafa77dbf186b7fd488006beff893744caa3c4f6f299e8a709fa2087374fc";
+
+  const depositAbi = [
+    "function depositEthTo(address l2Destination) payable returns (uint256)",
+    "function depositEthToSelf() payable returns (uint256)"
+  ];
+  const withdrawAbi = [
+    "function withdrawEth(address l1Destination) payable returns (uint256)",
+    "function withdrawEthToSelf() payable returns (uint256)"
+  ];
+  const arbSysAbi = [
+    "function sendMerkleTreeState() view returns (uint256 size, bytes32 root, bytes32[] partials)",
+    "event L2ToL1Tx(address caller, address indexed destination, uint256 indexed hash, uint256 indexed position, uint256 arbBlockNum, uint256 ethBlockNum, uint256 timestamp, uint256 callvalue, bytes data)"
+  ];
+  const nodeIfAbi = [
+    "function constructOutboxProof(uint64 size, uint64 leaf) view returns (bytes32 send, bytes32 root, bytes32[] proof)"
+  ];
+  const outboxAbi = [
+    "function executeTransaction(bytes32[] proof, uint256 index, address l2Sender, address to, uint256 l2Block, uint256 l1Block, uint256 l2Timestamp, uint256 value, bytes data)"
+  ];
+
+  // ─── DOM helpers ─────────────────────────────────────────
+  const $ = id => document.getElementById(id);
+  const escapeHtml = s => String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  function show(el) { el.classList.remove("hidden"); }
+  function hide(el) { el.classList.add("hidden"); }
+  function setStatus(el, msg, kind="info") {
+    el.className = "status " + kind;
+    el.textContent = msg;
+    show(el);
+  }
+  function shortAddr(a) { return a.slice(0,6) + "…" + a.slice(-4); }
+  function shortHash(h) { return h.slice(0,10) + "…" + h.slice(-6); }
+
+  // ─── Tabs ────────────────────────────────────────────────
+  document.querySelectorAll("nav.tabs button").forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll("nav.tabs button").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      document.querySelectorAll(".tab-content").forEach(s => s.classList.remove("active"));
+      $("tab-" + btn.dataset.tab).classList.add("active");
+    };
+  });
+  function switchToTab(name) {
+    document.querySelector(`nav.tabs button[data-tab="${name}"]`).click();
+  }
+
+  // ─── Wallet ──────────────────────────────────────────────
+  function getChainParams(chainId) {
+    if (chainId === L1_CHAIN_ID) return {
+      chainId: "0x" + L1_CHAIN_ID.toString(16),
+      chainName: "EtherEver",
+      nativeCurrency: { name: "EtherEver", symbol: "ETE", decimals: 18 },
+      rpcUrls: [L1_RPC],
+      blockExplorerUrls: ["https://etherever.ever-chain.xyz"]
+    };
+    if (chainId === L2_CHAIN_ID) return {
+      chainId: "0x" + L2_CHAIN_ID.toString(16),
+      chainName: "ArbiEver",
+      nativeCurrency: { name: "EtherEver", symbol: "ETE", decimals: 18 },
+      rpcUrls: [L2_RPC],
+      blockExplorerUrls: ["https://arbiever.ever-chain.xyz"]
+    };
+  }
+  async function ensureChain(chainId) {
+    if (!window.ethereum) throw new Error("지갑이 감지되지 않습니다 (MetaMask 등 필요)");
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const net = await provider.getNetwork();
+    if (net.chainId === chainId) return;
+    try {
+      await window.ethereum.request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId: "0x" + chainId.toString(16) }]
+      });
+    } catch (e) {
+      if (e.code === 4902 || /Unrecognized chain/i.test(e.message || "")) {
+        await window.ethereum.request({
+          method: "wallet_addEthereumChain",
+          params: [getChainParams(chainId)]
+        });
+      } else throw e;
+    }
+  }
+  // ─── 잔액 fetch (RPC 직접 — 지갑 체인과 무관) ───
+  async function fetchBalances(addr) {
+    const box = $("balances");
+    box.classList.add("refreshing");
+    try {
+      const l1 = new ethers.providers.JsonRpcProvider(L1_RPC);
+      const l2 = new ethers.providers.JsonRpcProvider(L2_RPC);
+      const [b1, b2] = await Promise.all([
+        l1.getBalance(addr).catch(() => null),
+        l2.getBalance(addr).catch(() => null)
+      ]);
+      $("bal-l1").textContent = b1 !== null ? Number(ethers.utils.formatEther(b1)).toLocaleString(undefined,{maximumFractionDigits:6}) : "조회 실패";
+      $("bal-l2").textContent = b2 !== null ? Number(ethers.utils.formatEther(b2)).toLocaleString(undefined,{maximumFractionDigits:6}) : "조회 실패";
+      show(box);
+    } finally {
+      box.classList.remove("refreshing");
+    }
+  }
+  $("bal-refresh").onclick = async () => {
+    if (!window.ethereum) return;
+    const accs = await window.ethereum.request({ method: "eth_accounts" });
+    if (accs.length > 0) await fetchBalances(accs[0]);
+  };
+
+  // 양쪽 chain pill 활성 표시 + 클릭 시 전환
+  function updateChainPills(chainId) {
+    const p1 = $("pill-l1"), p2 = $("pill-l2"), g = $("chain-group");
+    p1.classList.remove("active","l1","l2");
+    p2.classList.remove("active","l1","l2");
+    if (chainId === L1_CHAIN_ID)      p1.classList.add("active","l1");
+    else if (chainId === L2_CHAIN_ID) p2.classList.add("active","l2");
+    show(g);
+  }
+  $("pill-l1").onclick = async () => { try { await ensureChain(L1_CHAIN_ID); } catch(e){ console.error(e); } };
+  $("pill-l2").onclick = async () => { try { await ensureChain(L2_CHAIN_ID); } catch(e){ console.error(e); } };
+
+  // 지갑 로그아웃 (UI만 초기화 — EIP-1193 spec에 disconnect 없음)
+  let userDisconnected = false;
+  function disconnectUI() {
+    userDisconnected = true;
+    hide($("account")); hide($("chain-group")); hide($("disconnect"));
+    hide($("balances"));
+    $("connect").classList.remove("hidden");
+  }
+  $("disconnect").onclick = disconnectUI;
+
+  // 주소 복사 버튼
+  $("copy-addr").onclick = () => {
+    const a = $("copy-addr").dataset.addr;
+    if (!a) return;
+    navigator.clipboard.writeText(a);
+    const btn = $("copy-addr"), orig = btn.textContent;
+    btn.textContent = "✓";
+    setTimeout(() => { btn.textContent = orig; }, 1200);
+  };
+
+  async function refreshWalletInfo() {
+    if (!window.ethereum) return;
+    try {
+      const accs = await window.ethereum.request({ method: "eth_accounts" });
+      const chainIdHex = await window.ethereum.request({ method: "eth_chainId" });
+      const chainId = parseInt(chainIdHex, 16);
+      if (accs.length > 0 && !userDisconnected) {
+        $("account").textContent = shortAddr(accs[0]);
+        $("copy-addr").dataset.addr = accs[0];   // 전체 주소를 data-attr 에
+        show($("account"));
+        show($("copy-addr"));
+        show($("disconnect"));
+        $("connect").classList.add("hidden");
+        updateChainPills(chainId);
+        fetchBalances(accs[0]);
+      } else {
+        hide($("account")); hide($("copy-addr"));
+        hide($("chain-group")); hide($("disconnect"));
+        hide($("balances"));
+        $("connect").classList.remove("hidden");
+      }
+    } catch {}
+  }
+  $("connect").onclick = async () => {
+    if (!window.ethereum) { alert("지갑이 감지되지 않습니다 (MetaMask 등 설치 필요)"); return; }
+    userDisconnected = false;
+    await window.ethereum.request({ method: "eth_requestAccounts" });
+    refreshWalletInfo();
+  };
+  if (window.ethereum) {
+    window.ethereum.on?.("accountsChanged", refreshWalletInfo);
+    window.ethereum.on?.("chainChanged",    refreshWalletInfo);
+    refreshWalletInfo();
+  }
+
+  // ─── 테마 토글 (localStorage 저장 + 시스템 prefers 기본) ───
+  const themeBtn = $("theme");
+  function applyTheme(t) {
+    document.documentElement.setAttribute("data-theme", t);
+    themeBtn.textContent = t === "light" ? "🌞" : "🌙";
+  }
+  const saved = localStorage.getItem("everchain-theme");
+  const sysLight = window.matchMedia?.("(prefers-color-scheme: light)").matches;
+  applyTheme(saved || (sysLight ? "light" : "dark"));
+  themeBtn.onclick = () => {
+    const cur = document.documentElement.getAttribute("data-theme") || "dark";
+    const next = cur === "dark" ? "light" : "dark";
+    applyTheme(next);
+    localStorage.setItem("everchain-theme", next);
+  };
+
+  // ─── 입금 (L1 → L2) ──────────────────────────────────────
+  $("dep-send").onclick = async () => {
+    const status = $("dep-status"), result = $("dep-result");
+    hide(result); status.className = "status hidden";
+    const btn = $("dep-send"); btn.disabled = true;
+    try {
+      const dest    = $("dep-to").value.trim();
+      const amount  = $("dep-amount").value.trim();
+      if (!amount || isNaN(parseFloat(amount))) throw new Error("금액을 ETE 단위로 입력하세요");
+      if (dest && !/^0x[0-9a-fA-F]{40}$/.test(dest)) throw new Error("L2 주소 형식이 올바르지 않습니다");
+
+      setStatus(status, "🔌 지갑 연결 / EtherEver L1 으로 전환 중...", "info");
+      await ensureChain(L1_CHAIN_ID);
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      const me = await signer.getAddress();
+      const c = new ethers.Contract(DEPOSIT_HELPER, depositAbi, signer);
+      const value = ethers.utils.parseEther(amount);
+      const gasPrice = await provider.getGasPrice();
+
+      setStatus(status, "🖊️ 지갑에서 서명 대기 중...", "info");
+      const useSelf = !dest || dest.toLowerCase() === me.toLowerCase();
+      const tx = useSelf
+        ? await c.depositEthToSelf({ value, gasPrice, type: 0 })
+        : await c.depositEthTo(dest, { value, gasPrice, type: 0 });
+
+      setStatus(status, `📤 전송됨: ${shortHash(tx.hash)} — 컨펌 대기 중 (1블록 ≈ 13초, 약 5~6블록 = 1~1.5분 소요)`, "info");
+      const rcpt = await tx.wait();
+      if (rcpt.status !== 1) throw new Error("L1 트랜잭션이 revert 됐습니다");
+
+      const destShown = useSelf ? me : dest;
+      result.innerHTML = `
+        <div><strong>✅ L1 입금 완료</strong> — 1~2 분 후 L2 에 도착합니다.</div>
+        <div style="margin-top:6px">L2 받을 주소: <code>${escapeHtml(destShown)}</code></div>
+        <div style="margin-top:4px">L1 tx: <code>${escapeHtml(tx.hash)}</code></div>
+        <div class="tx-actions">
+          <a class="copy-btn" href="https://etherever.ever-chain.xyz/tx/${tx.hash}" target="_blank">L1 explorer →</a>
+          <a class="copy-btn" href="https://arbiever.ever-chain.xyz/address/${destShown}" target="_blank">L2 잔액 확인 →</a>
+        </div>`;
+      show(result);
+      hide(status);
+      // 잔액 자동 갱신
+      setTimeout(() => fetchBalances(me), 1500);
+    } catch (e) {
+      console.error(e);
+      const msg = e?.error?.message || e?.reason || e?.message || String(e);
+      setStatus(status, "❌ " + msg, "error");
+    } finally { btn.disabled = false; }
+  };
+
+  // ─── 출금 시작 (L2 → L1) ─────────────────────────────────
+  $("wdr-send").onclick = async () => {
+    const status = $("wdr-status"), result = $("wdr-result");
+    hide(result); status.className = "status hidden";
+    const btn = $("wdr-send"); btn.disabled = true;
+    try {
+      const dest    = $("wdr-to").value.trim();
+      const amount  = $("wdr-amount").value.trim();
+      if (!amount || isNaN(parseFloat(amount))) throw new Error("금액을 ETE 단위로 입력하세요");
+      if (dest && !/^0x[0-9a-fA-F]{40}$/.test(dest)) throw new Error("L1 주소 형식이 올바르지 않습니다");
+
+      setStatus(status, "🔌 지갑 연결 / ArbiEver L2 로 전환 중...", "info");
+      await ensureChain(L2_CHAIN_ID);
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      const me = await signer.getAddress();
+      const c = new ethers.Contract(WITHDRAW_HELPER, withdrawAbi, signer);
+      const value = ethers.utils.parseEther(amount);
+      const gasPrice = await provider.getGasPrice();
+
+      setStatus(status, "🖊️ 지갑에서 서명 대기 중...", "info");
+      const useSelf = !dest || dest.toLowerCase() === me.toLowerCase();
+      const tx = useSelf
+        ? await c.withdrawEthToSelf({ value, gasPrice, type: 0 })
+        : await c.withdrawEth(dest, { value, gasPrice, type: 0 });
+
+      setStatus(status, `📤 전송됨: ${shortHash(tx.hash)} — 컨펌 대기 중`, "info");
+      const rcpt = await tx.wait();
+      if (rcpt.status !== 1) throw new Error("L2 트랜잭션이 revert 됐습니다");
+
+      const destShown = useSelf ? me : dest;
+      const now = new Date();
+      const ready = new Date(now.getTime() + 16 * 60 * 1000); // +16분 (15분 + 1분 안전 마진)
+      const fmt = d => d.toLocaleString("ko-KR", { hour12: false, year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit", second:"2-digit" });
+
+      // [pending-withdrawals] 미인출 트랜잭션을 localStorage 에 저장 — 페이지를 닫아도 다음에 다시 보이게.
+      savePendingWithdrawal({
+        hash: tx.hash,
+        destination: destShown,
+        amount: amount,
+        startedAt: now.getTime(),
+        readyAt: ready.getTime()
+      });
+
+      result.innerHTML = `
+        <div>
+          <strong>✅ L2 출금 시작 완료</strong> —
+          <span style="color:var(--emphasize);font-weight:700">challenge period (~15분)</span>
+          후 L1 인출 가능 상태가 됩니다.
+        </div>
+        <div style="margin-top:8px;padding:10px 12px;background:var(--code-bg);border-left:3px solid var(--success-fg);border-radius:4px;font-size:13px;border:1px solid var(--code-border)">
+          출금 시작 시각: <code>${fmt(now)}</code><br>
+          <strong style="color:var(--warn-fg)">추천 인출 실행 시점: ${fmt(ready)} 이후</strong><br>
+          <span style="color:var(--muted);font-size:12px">이 트랜잭션은 "미인출 트랜잭션" 목록에 자동 저장됩니다. 페이지를 닫아도 다시 열면 보입니다.</span>
+        </div>
+        <div style="margin-top:6px">L1 받을 주소: <code>${escapeHtml(destShown)}</code></div>
+        <div style="margin-top:4px">L2 tx: <code>${escapeHtml(tx.hash)}</code></div>
+        <div class="tx-actions">
+          <a class="copy-btn" href="https://arbiever.ever-chain.xyz/tx/${tx.hash}" target="_blank">L2 explorer →</a>
+          <button class="copy-btn" id="wdr-goto-exec" data-hash="${tx.hash}">이 해시로 "L1 인출 실행" 탭 열기 →</button>
+        </div>`;
+      show(result);
+      hide(status);
+      // 잔액 자동 갱신
+      setTimeout(() => fetchBalances(me), 1500);
+
+      $("wdr-goto-exec").onclick = () => {
+        $("exe-hash").value = tx.hash;
+        switchToTab("execute");
+        $("exe-lookup").click();
+      };
+    } catch (e) {
+      console.error(e);
+      const msg = e?.error?.message || e?.reason || e?.message || String(e);
+      setStatus(status, "❌ " + msg, "error");
+    } finally { btn.disabled = false; }
+  };
+
+  // ─── L1 인출 실행 (lookup + execute) ─────────────────────
+  let currentArgs = null;
+
+  $("exe-lookup").onclick = async () => {
+    const txhash = $("exe-hash").value.trim();
+    const status = $("exe-status");
+    if (!/^0x[0-9a-fA-F]{64}$/.test(txhash)) {
+      setStatus(status, "올바른 트랜잭션 해시 형식이 아닙니다 (0x + 64 hex)", "error");
+      return;
+    }
+    hide($("exe-output"));
+    currentArgs = null;
+    try {
+      await lookup(txhash);
+    } catch (e) {
+      console.error(e);
+      setStatus(status, "❌ " + (e.message || e), "error");
+    }
+  };
+
+  async function lookup(txhash) {
+    const status = $("exe-status");
+    const l2 = new ethers.providers.JsonRpcProvider(L2_RPC);
+
+    setStatus(status, "🔍 L2 영수증 조회 중...", "info");
+    const receipt = await l2.getTransactionReceipt(txhash);
+    if (!receipt) throw new Error("해당 해시의 트랜잭션을 L2 에서 찾을 수 없습니다");
+    if (receipt.status === 0) throw new Error("L2 트랜잭션이 실패한 상태입니다 (status=0)");
+
+    setStatus(status, "🔍 L2ToL1Tx 이벤트 검색...", "info");
+    const log = receipt.logs.find(l =>
+      l.address.toLowerCase() === ARBSYS.toLowerCase() &&
+      l.topics[0] === L2_TO_L1_TX_TOPIC
+    );
+    if (!log) throw new Error("이 트랜잭션에 L2ToL1Tx 이벤트가 없습니다. withdrawEth 트랜잭션인지 확인하세요");
+
+    const iface = new ethers.utils.Interface(arbSysAbi);
+    const parsed = iface.parseLog(log);
+    const { caller, destination, position, arbBlockNum, ethBlockNum, timestamp, callvalue, data } = parsed.args;
+
+    setStatus(status, "🔍 출금 트리 크기 조회...", "info");
+    const arbSys = new ethers.Contract(ARBSYS, arbSysAbi, l2);
+    const tree = await arbSys.sendMerkleTreeState();
+    const size = tree[0];
+
+    setStatus(status, `🔍 머클 증명 생성 (size=${size}, position=${position})...`, "info");
+    const nodeIf = new ethers.Contract(NODEIF, nodeIfAbi, l2);
+    let proof;
+    try {
+      const r = await nodeIf.constructOutboxProof(size, position);
+      proof = r.proof;
+    } catch (e) {
+      const msg = e?.error?.message || e?.reason || e?.message || "";
+      if (/revert|CALL_EXCEPTION|reverted/i.test(msg)) {
+        setStatus(status, "⏳ 아직 확정(confirm)되지 않았습니다. challenge period(~15분) 후 다시 시도하세요.", "warn");
+        renderInfoOnly({caller, destination, position, callvalue});
+        return;
+      }
+      throw e;
+    }
+
+    currentArgs = {
+      proof,
+      index: position,
+      l2Sender: caller,
+      to: destination,
+      l2Block: arbBlockNum,
+      l1Block: ethBlockNum,
+      l2Timestamp: timestamp,
+      value: callvalue,
+      data: data && data !== "0x" ? data : "0x"
+    };
+    setStatus(status, "✅ 인출 준비 완료", "success");
+    renderOutput(currentArgs);
+  }
+
+  function renderInfoOnly(i) {
+    $("exe-args").innerHTML = `
+      <p style="color:#9ca3af;font-size:13px;margin:0 0 8px">
+        출금은 인식됐지만 아직 인출 가능 상태가 아닙니다. 본인의 출금인지 확인:
+      </p>
+      <div class="arg-row"><div class="arg-name">caller <span class="hint-inline">(L2 보낸 사람)</span></div><div class="arg-value">${escapeHtml(i.caller)}</div></div>
+      <div class="arg-row"><div class="arg-name">destination <span class="hint-inline">(L1 받을 사람)</span></div><div class="arg-value">${escapeHtml(i.destination)}</div></div>
+      <div class="arg-row"><div class="arg-name">position</div><div class="arg-value">${i.position.toString()}</div></div>
+      <div class="arg-row"><div class="arg-name">value</div><div class="arg-value">${ethers.utils.formatEther(i.callvalue)} ETE</div></div>
+    `;
+    $("exe-send").classList.add("hidden");
+    show($("exe-output"));
+  }
+
+  function renderOutput(a) {
+    const proofStr = "[" + a.proof.join(",") + "]";
+    const items = [
+      { name: "proof",       type: "bytes32[]", val: proofStr,             info: a.proof.length + "개 노드" },
+      { name: "index",       type: "uint256",   val: a.index.toString(),   info: "position" },
+      { name: "l2Sender",    type: "address",   val: a.l2Sender,           info: "L2 보낸 사람" },
+      { name: "to",          type: "address",   val: a.to,                 info: "L1 받을 사람" },
+      { name: "l2Block",     type: "uint256",   val: a.l2Block.toString(), info: "arbBlockNum" },
+      { name: "l1Block",     type: "uint256",   val: a.l1Block.toString(), info: "ethBlockNum" },
+      { name: "l2Timestamp", type: "uint256",   val: a.l2Timestamp.toString(),
+        info: new Date(a.l2Timestamp.toNumber()*1000).toISOString() },
+      { name: "value",       type: "uint256",   val: a.value.toString(),
+        info: ethers.utils.formatEther(a.value) + " ETE" },
+      { name: "data",        type: "bytes",     val: a.data,
+        info: a.data === "0x" ? "단순 ETE 출금" : "" },
+    ];
+    $("exe-args").innerHTML = items.map(it => `
+      <div class="arg-row">
+        <div class="arg-name">
+          ${escapeHtml(it.name)} <code>${escapeHtml(it.type)}</code>
+          ${it.info ? `<span class="hint-inline">${escapeHtml(it.info)}</span>` : ""}
+        </div>
+        <div class="arg-value-wrap">
+          <code class="arg-value">${escapeHtml(it.val)}</code>
+          <button class="copy-btn" data-val="${escapeHtml(it.val)}">복사</button>
+        </div>
+      </div>`).join("");
+    document.querySelectorAll("#exe-args .copy-btn").forEach(btn => {
+      btn.onclick = () => {
+        navigator.clipboard.writeText(btn.dataset.val);
+        btn.textContent = "✓ 복사됨";
+        btn.classList.add("copied");
+        setTimeout(()=>{ btn.textContent="복사"; btn.classList.remove("copied"); }, 1400);
+      };
+    });
+    $("exe-send").classList.remove("hidden");
+    show($("exe-output"));
+  }
+
+  $("exe-send").onclick = async () => {
+    if (!currentArgs) return;
+    const result = $("exe-result");
+    const btn = $("exe-send"); btn.disabled = true;
+    // [pending-withdrawals] 인출 완료 시 이 hash 를 미인출 목록에서 제거하려고 미리 저장.
+    const execL2Hash = $("exe-hash").value.trim();
+    try {
+      setStatus(result, "🔌 지갑 연결 / EtherEver L1 으로 전환 중...", "info");
+      await ensureChain(L1_CHAIN_ID);
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      const outbox = new ethers.Contract(OUTBOX, outboxAbi, signer);
+      const gasPrice = await provider.getGasPrice();
+
+      setStatus(result, "🖊️ 지갑에서 서명 대기 중...", "info");
+      const tx = await outbox.executeTransaction(
+        currentArgs.proof, currentArgs.index, currentArgs.l2Sender, currentArgs.to,
+        currentArgs.l2Block, currentArgs.l1Block, currentArgs.l2Timestamp,
+        currentArgs.value, currentArgs.data,
+        { gasPrice, type: 0 }
+      );
+      setStatus(result, `📤 전송됨: ${shortHash(tx.hash)} — 컨펌 대기 중 (1블록 ≈ 13초, 약 5~6블록 = 1~1.5분 소요)`, "info");
+      const rcpt = await tx.wait();
+      if (rcpt.status !== 1) throw new Error("L1 트랜잭션이 revert 됐습니다");
+
+      result.className = "status success";
+      result.innerHTML = `✅ L1 인출 완료! <code>${escapeHtml(currentArgs.to)}</code> 에 ${ethers.utils.formatEther(currentArgs.value)} ETE 도착. <a href="https://etherever.ever-chain.xyz/tx/${tx.hash}" target="_blank">L1 트랜잭션 →</a>`;
+      // [pending-withdrawals] 인출 완료 → 미인출 목록에서 제거 (입력 hash 가 L2 출금 hash)
+      if (execL2Hash && /^0x[0-9a-fA-F]{64}$/.test(execL2Hash)) {
+        removePendingWithdrawal(execL2Hash);
+      }
+      // 잔액 자동 갱신
+      const accs = await window.ethereum.request({ method: "eth_accounts" });
+      if (accs.length > 0) setTimeout(() => fetchBalances(accs[0]), 1500);
+    } catch (e) {
+      console.error(e);
+      const msg = e?.error?.message || e?.reason || e?.message || String(e);
+      setStatus(result, "❌ " + msg, "error");
+    } finally { btn.disabled = false; }
+  };
+
+  // Enter 키 동작
+  $("exe-hash").addEventListener("keydown", e => { if (e.key === "Enter") $("exe-lookup").click(); });
+  $("dep-amount").addEventListener("keydown", e => { if (e.key === "Enter") $("dep-send").click(); });
+  $("wdr-amount").addEventListener("keydown", e => { if (e.key === "Enter") $("wdr-send").click(); });
+
+  // ──────── L2 → L1 출금 미인출 트랜잭션 보관 (localStorage) ────────
+  // 사용자가 출금 후 페이지를 닫으면 L2 출금 tx hash 를 잃기 쉬움. 이 브라우저에
+  // 보관해두면 다음에 페이지를 열 때 출금/인출 실행 탭 상단에 자동으로 다시 표시됨.
+  const PENDING_KEY = "evchain_pending_withdrawals_v1";
+
+  function loadPendingWithdrawals() {
+    try {
+      const raw = localStorage.getItem(PENDING_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch { return []; }
+  }
+  function savePendingWithdrawal(rec) {
+    const list = loadPendingWithdrawals();
+    if (!list.find(x => (x.hash || "").toLowerCase() === rec.hash.toLowerCase())) {
+      list.unshift(rec);
+      localStorage.setItem(PENDING_KEY, JSON.stringify(list));
+    }
+    renderPendingWithdrawals();
+  }
+  function removePendingWithdrawal(hash) {
+    const list = loadPendingWithdrawals().filter(x => (x.hash || "").toLowerCase() !== hash.toLowerCase());
+    localStorage.setItem(PENDING_KEY, JSON.stringify(list));
+    renderPendingWithdrawals();
+  }
+  function formatRemaining(ms) {
+    if (ms <= 0) return "✅ 인출 가능 시점 도달 — \"L1 인출 실행\" 탭에서 진행하세요";
+    const totalSec = Math.ceil(ms / 1000);
+    const m = Math.floor(totalSec / 60);
+    const s = totalSec % 60;
+    return `⏳ 남은 시간 약 ${m}분 ${s.toString().padStart(2, "0")}초`;
+  }
+  function renderPendingWithdrawals() {
+    const list = loadPendingWithdrawals();
+    const hosts = document.querySelectorAll(".pending-withdrawals-host");
+    if (!hosts.length) return;
+    const fmtDate = d => new Date(d).toLocaleString("ko-KR", { hour12: false, year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit" });
+    const now = Date.now();
+
+    if (list.length === 0) {
+      hosts.forEach(h => { h.classList.add("hidden"); h.innerHTML = ""; });
+      return;
+    }
+    const html = `
+      <div class="card" style="border-color:var(--warn-fg)">
+        <h3 style="color:var(--warn-fg)">⏳ 진행 중인 L2 → L1 출금 (${list.length}건)</h3>
+        <p class="tab-intro" style="margin-top:4px">
+          출금이 시작됐지만 L1 인출이 아직 실행되지 않은 트랜잭션입니다. 추천 시점 이후 "L1 인출 실행"에서 진행하세요.
+          이 정보는 <strong>이 브라우저</strong>에만 저장됩니다 — 다른 PC/브라우저로 이동하면 안 보입니다.
+        </p>
+        ${list.map(rec => {
+          const remaining = rec.readyAt - now;
+          const ready = remaining <= 0;
+          const borderColor = ready ? "var(--success-fg)" : "var(--warn-fg)";
+          return `
+            <div style="padding:10px 12px;background:var(--code-bg);border-left:3px solid ${borderColor};border-radius:4px;margin-top:8px;border:1px solid var(--code-border);font-size:13px">
+              <div><strong>${ready ? "✅" : "⏳"} ${escapeHtml(rec.amount)} ETE → <code>${escapeHtml(rec.destination)}</code></strong></div>
+              <div style="margin-top:4px">L2 tx: <code>${escapeHtml(rec.hash)}</code></div>
+              <div style="margin-top:4px">시작 시각: ${fmtDate(rec.startedAt)} · 추천 인출 시점: ${fmtDate(rec.readyAt)}</div>
+              <div style="margin-top:4px;font-weight:700;color:${borderColor}">${formatRemaining(remaining)}</div>
+              <div class="tx-actions" style="margin-top:6px">
+                <a class="copy-btn" href="https://arbiever.ever-chain.xyz/tx/${rec.hash}" target="_blank">L2 explorer →</a>
+                <button class="copy-btn pending-goto-exec" data-hash="${rec.hash}">"L1 인출 실행" 탭에 자동 입력 →</button>
+                <button class="copy-btn pending-remove" data-hash="${rec.hash}" title="이 항목을 보관함에서만 삭제 (블록체인의 트랜잭션은 영향 없음)">기록 삭제</button>
+              </div>
+            </div>
+          `;
+        }).join("")}
+      </div>
+    `;
+    hosts.forEach(h => { h.innerHTML = html; h.classList.remove("hidden"); });
+
+    document.querySelectorAll(".pending-goto-exec").forEach(b => {
+      b.onclick = () => {
+        $("exe-hash").value = b.dataset.hash;
+        switchToTab("execute");
+        $("exe-lookup").click();
+      };
+    });
+    document.querySelectorAll(".pending-remove").forEach(b => {
+      b.onclick = () => {
+        if (confirm("이 트랜잭션 기록을 삭제하시겠습니까? 실제 블록체인 트랜잭션은 영향 받지 않습니다.")) {
+          removePendingWithdrawal(b.dataset.hash);
+        }
+      };
+    });
+  }
+
+  // 페이지 로드 시 한 번 + 30초마다 카운트다운 갱신
+  renderPendingWithdrawals();
+  setInterval(renderPendingWithdrawals, 30000);
+})();
+</script>
+</body>
+</html>

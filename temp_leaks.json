@@ -1,0 +1,42 @@
+[
+ {
+  "Description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
+  "StartLine": 1003,
+  "EndLine": 1003,
+  "StartColumn": 18,
+  "EndColumn": 55,
+  "Match": "KEY = \"evchain_pending_withdrawals_v1\"",
+  "Secret": "evchain_pending_withdrawals_v1",
+  "File": "src/executor.html",
+  "SymlinkFile": "",
+  "Commit": "12a3be1d87de15e2bd262c618ea2298854a7a75b",
+  "Entropy": 3.9395723,
+  "Author": "ArbiEver Bot",
+  "Email": "bot@arbiever.local",
+  "Date": "2026-05-30T06:51:11Z",
+  "Message": "L1 인출 예상 시간 + L2 출금 미인출 보관 (localStorage)\n\n- L1 인출 실행의 '컨펌 대기' 메시지에 예상 시간 추가 (1블록 ≈ 13초, 약 5~6블록)\n- 출금 시작 시 L2 tx hash + 추천 인출 시점을 localStorage 에 저장\n- 출금/인출 탭 상단에 미인출 트랜잭션 자동 표시 (페이지 닫아도 유지)\n- 30초마다 카운트다운 갱신, 인출 완료 시 자동 제거",
+  "Tags": [],
+  "RuleID": "generic-api-key",
+  "Fingerprint": "12a3be1d87de15e2bd262c618ea2298854a7a75b:src/executor.html:generic-api-key:1003"
+ },
+ {
+  "Description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
+  "StartLine": 1003,
+  "EndLine": 1003,
+  "StartColumn": 18,
+  "EndColumn": 55,
+  "Match": "KEY = \"evchain_pending_withdrawals_v1\"",
+  "Secret": "evchain_pending_withdrawals_v1",
+  "File": "index.html",
+  "SymlinkFile": "",
+  "Commit": "12a3be1d87de15e2bd262c618ea2298854a7a75b",
+  "Entropy": 3.9395723,
+  "Author": "ArbiEver Bot",
+  "Email": "bot@arbiever.local",
+  "Date": "2026-05-30T06:51:11Z",
+  "Message": "L1 인출 예상 시간 + L2 출금 미인출 보관 (localStorage)\n\n- L1 인출 실행의 '컨펌 대기' 메시지에 예상 시간 추가 (1블록 ≈ 13초, 약 5~6블록)\n- 출금 시작 시 L2 tx hash + 추천 인출 시점을 localStorage 에 저장\n- 출금/인출 탭 상단에 미인출 트랜잭션 자동 표시 (페이지 닫아도 유지)\n- 30초마다 카운트다운 갱신, 인출 완료 시 자동 제거",
+  "Tags": [],
+  "RuleID": "generic-api-key",
+  "Fingerprint": "12a3be1d87de15e2bd262c618ea2298854a7a75b:index.html:generic-api-key:1003"
+ }
+]

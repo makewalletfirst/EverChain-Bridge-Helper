@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ArbiEver Contract · EverChain Bridge Helper</title>
+
+<link rel="icon" type="image/png" sizes="512x512" href="arbiicon512.png">
+<link rel="apple-touch-icon" href="arbiicon512.png">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="EverChain Bridge Helper">
+<meta property="og:title" content="ArbiEver Contract · EverChain Bridge Helper">
+<meta property="og:description" content="EverChain의 EVM L1↔L2 입출금 Helper 페이지 입니다.">
+<meta property="og:image" content="etherarbiswap.png">
+
+<meta name="description" content="ArbiEver L1 의 검증된 컨트랙트 9개 목록 (Proxy + Implementation)">
+
+<style>
+  :root {
+    --bg: #0f1115; --fg: #d8e0ec;
+    --muted: #9ca3af; --muted-2: #6b7280;
+    --card: #1a1d24; --card-2: #14171d;
+    --border: #2a2f3a; --border-2: #2d3748;
+    --code-bg: #0f1115; --code-border: #1f242d;
+    --hover-bg: #232732;
+    --accent: #3b82f6; --accent-hover: #2563eb;
+    --success-fg: #6ee7b7;
+    --chain-l1: #fcd34d; --chain-l2: #6ee7b7;
+    --link: #60a5fa;
+  }
+  [data-theme="light"] {
+    --bg: #ffffff; --fg: #111827;
+    --muted: #6b7280; --muted-2: #9ca3af;
+    --card: #f9fafb; --card-2: #f3f4f6;
+    --border: #e5e7eb; --border-2: #d1d5db;
+    --code-bg: #f3f4f6; --code-border: #e5e7eb;
+    --hover-bg: #e5e7eb;
+    --accent: #2563eb; --accent-hover: #1d4ed8;
+    --success-fg: #047857;
+    --chain-l1: #d97706; --chain-l2: #059669;
+    --link: #2563eb;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--fg);
+    line-height: 1.55;
+    padding: 0 16px 80px;
+    min-height: 100vh;
+    transition: background 0.2s, color 0.2s;
+  }
+  .container { max-width: 920px; margin: 0 auto; }
+
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 0 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+    flex-wrap: wrap; gap: 12px;
+  }
+  header h1 { font-size: 22px; margin: 0; letter-spacing: -0.01em; }
+  header .actions { display: flex; gap: 8px; align-items: center; }
+
+  .back-btn, .theme-btn {
+    background: transparent; border: 1px solid var(--border-2);
+    color: var(--muted); padding: 8px 14px; border-radius: 6px;
+    cursor: pointer; font-size: 13px; font-weight: 600;
+    text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+    transition: background 0.12s, color 0.12s, border-color 0.12s;
+  }
+  .back-btn:hover, .theme-btn:hover {
+    background: var(--hover-bg); color: var(--fg);
+    border-color: var(--accent);
+  }
+  .back-btn .arrow { color: var(--accent); font-size: 15px; }
+
+  .lead {
+    color: var(--muted); font-size: 14px; margin: 0 0 18px;
+  }
+  .lead code {
+    background: var(--card); padding: 1px 6px; border-radius: 3px;
+    font-size: 12.5px;
+    border: 1px solid var(--border);
+  }
+
+  .legend {
+    display: flex; gap: 18px; flex-wrap: wrap;
+    background: var(--card-2); border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    font-size: 12px; color: var(--muted);
+  }
+  .legend strong { color: var(--fg); margin-left: 6px; }
+  .legend .dot {
+    display: inline-block; width: 8px; height: 8px;
+    border-radius: 999px; margin-right: 5px; vertical-align: middle;
+  }
+  .legend .dot.impl  { background: var(--chain-l2); }
+  .legend .dot.proxy { background: var(--chain-l1); }
+
+  .contracts {
+    background: var(--card-2);
+    border: 1px solid var(--border);
+    padding: 14px 16px;
+    border-radius: 8px;
+  }
+  .contracts h2 {
+    margin: 0 0 10px; font-size: 13px;
+    color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.05em;
+    font-weight: 700;
+  }
+  .contracts table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .contracts th {
+    text-align: left; padding: 8px 10px;
+    color: var(--muted-2); font-weight: 600;
+    font-size: 11px; border-bottom: 1px solid var(--border);
+    text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .contracts td {
+    padding: 9px 10px; border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .contracts tr:last-child td { border-bottom: 0; }
+  .contracts tr:hover td { background: var(--hover-bg); }
+
+  .contracts td.cat {
+    font-size: 11.5px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+  .contracts td.cat.impl  { color: var(--chain-l2); }
+  .contracts td.cat.proxy { color: var(--chain-l1); }
+
+  .contracts td.name a {
+    color: var(--link); text-decoration: none;
+    font-weight: 600;
+  }
+  .contracts td.name a:hover { text-decoration: underline; }
+  .contracts td.name .addr {
+    color: var(--muted-2);
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 11.5px;
+    margin-left: 6px;
+  }
+
+  .contracts td.solc, .contracts td.lic {
+    font-family: ui-monospace, Menlo, monospace;
+    color: var(--fg); font-size: 11.5px;
+    white-space: nowrap;
+  }
+  .contracts td.status {
+    color: var(--success-fg); font-size: 12px;
+    white-space: nowrap;
+  }
+
+  footer {
+    text-align: center; color: var(--muted-2);
+    font-size: 12px; margin-top: 36px;
+  }
+  footer a { color: var(--link); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>📜 ArbiEver Contract</h1>
+    <div class="actions">
+      <a href="index.html" class="back-btn"><span class="arrow">←</span><span>돌아가기</span></a>
+      <button id="theme" class="theme-btn" title="테마 전환">🌙</button>
+    </div>
+  </header>
+
+  <p class="lead">
+    EtherEver L1 에 배포된 ArbiEver L2 인프라 컨트랙트 9개입니다.
+    모두 EtherEver Blockscout 에서 verify 완료. 컨트랙트 이름을 클릭하면 해당 페이지로 이동합니다.
+    Outbox proxy 는 EIP-1967 자동 인식이 활성화돼 <code>executeTransaction</code> 등을 "Write as Proxy" 탭에서 바로 호출할 수 있습니다.
+  </p>
+
+  <div class="legend">
+    <span><span class="dot impl"></span>Impl<strong>: 실제 로직 (delegatecall 대상)</strong></span>
+    <span><span class="dot proxy"></span>Proxy<strong>: 사용자가 호출하는 주소 (TransparentUpgradeableProxy)</strong></span>
+  </div>
+
+  <div class="contracts">
+    <h2>verified 9 / 9</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>카테고리</th><th>컨트랙트</th><th>solc</th><th>라이선스</th><th>상태</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="cat impl">Impl</td>
+          <td class="name"><a href="https://etherever.ever-chain.xyz/address/0x667c110c9F7646C83C7A7e0bf7d1004484B32d4F" target="_blank" rel="noopener">Outbox<span class="addr">0x667c…d4F</span></a></td>
+          <td class="solc">0.8.9</td><td class="lic">BUSL-1.1</td><td class="status">✅ partial</td>
+        </tr>
+        <tr>
+          <td class="cat impl">Impl</td>
+          <td class="name"><a href="https://etherever.ever-chain.xyz/address/0xf8A3BE8a7a0f96f38A07F46443E47d2C7A8c34Da" target="_blank" rel="noopener">Inbox<span class="addr">0xf8A3…34Da</span></a></td>
+          <td class="solc">0.8.9</td><td class="lic">BUSL-1.1</td><td class="status">✅ partial</td>
+        </tr>
+        <tr>
+          <td class="cat impl">Impl</td>
+          <td class="name"><a href="https://etherever.ever-chain.xyz/address/0x0aBc99d88139dE6aBd80c751f5f40b39f59a40E1" target="_blank" rel="noopener">Bridge<span class="addr">0x0aBc…40E1</span></a></td>
+          <td class="solc">0.8.9</td><td class="lic">BUSL-1.1</td><td class="status">✅ partial</td>
+        </tr>
+        <tr>
+          <td class="cat impl">Impl</td>
+          <td class="name"><a href="https://etherever.ever-chain.xyz/address/0x7F74d278300aE1f9548E0a3e13be18Cf61B1E9e3" target="_blank" rel="noopener">SequencerInbox<span class="addr">0x7F74…E9e3</span></a></td>
+          <td class="solc">0.8.9</td><td class="lic">BUSL-1.1</td><td class="status">✅ partial</td>
+        </tr>
+        <tr>
+          <td class="cat proxy">Proxy</td>
+          <td class="name"><a href="https://etherever.ever-chain.xyz/address/0x76b3772769cDD09Fb6A33e5f65fd13256808fc08" target="_blank" rel="noopener">Inbox<span class="addr">0x76b3…fc08</span></a></td>
+          <td class="solc">0.8.9</td><td class="lic">MIT</td><td class="status">✅ partial</td>
+        </tr>
+        <tr>
+          <td class="cat proxy">Proxy</td>
+          <td class="name"><a href="https://etherever.ever-chain.xyz/address/0x5FCD4ac605bF3957f463EbeB79c9Bc0056eDC63D" target="_blank" rel="noopener">Bridge<span class="addr">0x5FCD…C63D</span></a></td>
+          <td class="solc">0.8.9</td><td class="lic">MIT</td><td class="status">✅ partial</td>
+        </tr>
+        <tr>
+          <td class="cat proxy">Proxy</td>
+          <td class="name"><a href="https://etherever.ever-chain.xyz/address/0xA5CD2DB4022595Ea6BE7259d6AC7061dA54930f1" target="_blank" rel="noopener">SequencerInbox<span class="addr">0xA5CD…30f1</span></a></td>
+          <td class="solc">0.8.9</td><td class="lic">MIT</td><td class="status">✅ partial</td>
+        </tr>
+        <tr>
+          <td class="cat proxy">Proxy</td>
+          <td class="name"><a href="https://etherever.ever-chain.xyz/address/0xDBA33e4eFbEf4467eD0228C2b43b606B5F2964Ae" target="_blank" rel="noopener">Outbox<span class="addr">0xDBA3…64Ae</span></a></td>
+          <td class="solc">0.8.9</td><td class="lic">MIT</td><td class="status">✅ + auto-link</td>
+        </tr>
+        <tr>
+          <td class="cat proxy">Proxy</td>
+          <td class="name"><a href="https://etherever.ever-chain.xyz/address/0xbf3beDF7cDf0E3cC2a29ee935f37822338272aA5" target="_blank" rel="noopener">UpgradeExecutor<span class="addr">0xbf3b…2aA5</span></a></td>
+          <td class="solc">0.8.9</td><td class="lic">MIT</td><td class="status">✅ partial</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <footer>EtherEver · ArbiEver Bridge Helper · <a href="index.html">메인 페이지로 ←</a></footer>
+</div>
+
+<script>
+(() => {
+  // 메인 페이지와 동일한 localStorage 키로 테마 공유
+  const btn = document.getElementById("theme");
+  function apply(t) {
+    document.documentElement.setAttribute("data-theme", t);
+    btn.textContent = t === "light" ? "🌞" : "🌙";
+  }
+  const saved = localStorage.getItem("everchain-theme");
+  const sysLight = window.matchMedia?.("(prefers-color-scheme: light)").matches;
+  apply(saved || (sysLight ? "light" : "dark"));
+  btn.onclick = () => {
+    const cur = document.documentElement.getAttribute("data-theme") || "dark";
+    const next = cur === "dark" ? "light" : "dark";
+    apply(next);
+    localStorage.setItem("everchain-theme", next);
+  };
+})();
+</script>
+</body>
+</html>
