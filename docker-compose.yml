@@ -1,0 +1,7 @@
+services:
+  everchain-helper:
+    image: silverruler/everchain-bridge-helper:latest
+    container_name: everchain-helper
+    ports:
+      - "8765:80"
+    restart: unless-stopped

@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+    branches: [main, 260530]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    name: Validate static site + Dockerfile
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ── 1) Required assets must exist ───────────────────────────────
+      - name: Check required assets
+        run: |
+          set -e
+          for f in index.html contracts.html Dockerfile docker-compose.yml \
+                   arbiicon512.png etherarbiswap.png; do
+            if [ ! -f "$f" ]; then
+              echo "::error::missing required file: $f"
+              exit 1
+            fi
+            echo "✓ $f ($(stat -c %s "$f") bytes)"
+          done
+
+      # ── 2) HTML syntax (well-formedness — strict enough to catch typos
+      #      without being a full W3C validator) ────────────────────────
+      - name: HTML lint (htmlhint)
+        run: |
+          npx --yes htmlhint@1 \
+            --rules 'tagname-lowercase=true,attr-lowercase=true,attr-value-double-quotes=true,doctype-first=true,id-unique=true,src-not-empty=true' \
+            index.html contracts.html
+        # htmlhint exit code is non-zero on errors but the rules above are
+        # forgiving — only catches structural breakage
+
+      # ── 3) Docker build (no push; verifies the image still assembles) ─
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Docker build (no push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: everchain-bridge-helper:ci-${{ github.sha }}
+
+      # ── 4) Smoke test — actually serve the image and curl '/' ────────
+      - name: Smoke test (curl /)
+        run: |
+          docker build -t bridge-helper:smoke .
+          docker run -d --name bh -p 18080:80 bridge-helper:smoke
+          for i in $(seq 1 10); do
+            sleep 1
+            CODE=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:18080/ || true)
+            if [ "$CODE" = "200" ]; then
+              echo "✓ container serves / with 200 OK"
+              break
+            fi
+            if [ "$i" = "10" ]; then
+              echo "::error::container never returned 200"
+              docker logs bh
+              exit 1
+            fi
+          done
+          docker rm -f bh
